@@ -1,0 +1,272 @@
+# 卡牌战斗系统API文档
+
+## 概述
+
+本文档描述了卡牌战斗系统的后端API接口，前端开发者可以通过这些接口与学生和卡牌数据进行交互。所有API均返回JSON格式数据。
+
+## 基础信息
+
+- **基础URL**: `http://localhost:3000` (开发环境)
+- **内容类型**: `application/json`
+- **认证**: 当前版本无需认证
+
+## 学生管理API
+
+### 1. 创建学生
+
+**Endpoint**: `POST /students`
+
+**请求体**:
+```json
+{
+  "name": "学生姓名",
+  "studentId": "学号(唯一)",
+  "cardIds": ["可选，初始卡牌ID数组"]
+}
+```
+
+**成功响应** (201 Created):
+```json
+{
+  "message": "Student created successfully",
+  "student": {
+    "_id": "MongoDB生成的ID",
+    "name": "学生姓名",
+    "studentId": "学号",
+    "cardIds": ["卡牌ID数组"],
+    "createdAt": "创建时间"
+  }
+}
+```
+
+**错误响应**:
+- 400: 缺少必要字段或学号已存在
+- 500: 服务器内部错误
+
+### 2. 获取所有学生
+
+**Endpoint**: `GET /students`
+
+**成功响应** (200 OK):
+```json
+[
+  {
+    "_id": "学生ID",
+    "name": "学生姓名",
+    "studentId": "学号",
+    "cardIds": ["卡牌ID数组"],
+    "createdAt": "创建时间"
+  },
+  ...
+]
+```
+
+### 3. 获取特定学生
+
+**Endpoint**: `GET /students/:studentId`
+
+**成功响应** (200 OK):
+```json
+{
+  "_id": "学生ID",
+  "name": "学生姓名",
+  "studentId": "学号",
+  "cardIds": ["卡牌ID数组"],
+  "createdAt": "创建时间"
+}
+```
+
+**错误响应**:
+- 404: 学生不存在
+- 500: 服务器内部错误
+
+### 4. 更新学生信息
+
+**Endpoint**: `PUT /students/:studentId`
+
+**请求体**:
+```json
+{
+  "name": "新姓名(可选)",
+  "cardIds": ["新卡牌ID数组(可选)"]
+}
+```
+
+**成功响应** (200 OK):
+```json
+{
+  "message": "Student updated successfully"
+}
+```
+
+### 5. 删除学生
+
+**Endpoint**: `DELETE /students/:studentId`
+
+**成功响应** (200 OK):
+```json
+{
+  "message": "Student and associated cards deleted successfully"
+}
+```
+
+**注意**: 删除学生将同时删除该学生拥有的所有卡牌
+
+## 卡牌管理API
+
+### 1. 创建卡牌
+
+**Endpoint**: `POST /cards`
+
+**请求体**:
+```json
+{
+  "cid": "卡牌唯一ID",
+  "studentId": "所属学生学号",
+  "monsterName": "怪物名称",
+  "monsterAttribute": "怪物属性",
+
+  "skill1Attribute": "技能1属性(可选)",
+  "skill2Attribute": "技能2属性(可选)",
+  "skill1Attack": "技能1攻击力(可选，默认0)",
+  "skill2Attack": "技能2攻击力(可选，默认0)"
+}
+```
+
+**成功响应** (201 Created):
+```json
+{
+  "message": "Card created successfully",
+  "card": {
+    "cid": "卡牌ID",
+    "studentId": "学生学号",
+    "createdAt": "创建时间",
+    "monsterName": "怪物名称",
+    // 其他卡牌字段...
+  }
+}
+```
+
+### 2. 获取所有卡牌
+
+**Endpoint**: `GET /cards`
+
+**成功响应** (200 OK):
+```json
+[
+  {
+    "cid": "卡牌ID",
+    "studentId": "学生学号",
+    "createdAt": "创建时间",
+    "monsterName": "怪物名称",
+    // 其他卡牌字段...
+  },
+  ...
+]
+```
+
+### 3. 获取学生所有卡牌
+
+**Endpoint**: `GET /cards/student/:studentId`
+
+**成功响应** (200 OK):
+```json
+[
+  {
+    "cid": "卡牌ID",
+    "studentId": "学生学号",
+    // 其他卡牌字段...
+  },
+  ...
+]
+```
+
+### 4. 获取特定卡牌
+
+**Endpoint**: `GET /cards/:cid`
+
+**成功响应** (200 OK):
+```json
+{
+  "cid": "卡牌ID",
+  "studentId": "学生学号",
+  "createdAt": "创建时间",
+  // 其他卡牌字段...
+}
+```
+
+### 5. 更新卡牌信息
+
+**Endpoint**: `PUT /cards/:cid`
+
+**请求体**:
+```json
+{
+  "monsterName": "新怪物名称(可选)",
+  // 其他可更新字段...
+}
+```
+
+**成功响应** (200 OK):
+```json
+{
+  "message": "Card updated successfully"
+}
+```
+
+### 6. 删除卡牌
+
+**Endpoint**: `DELETE /cards/:cid`
+
+**成功响应** (200 OK):
+```json
+{
+  "message": "Card deleted successfully"
+}
+```
+
+## 错误处理
+
+所有错误响应都遵循以下格式:
+```json
+{
+  "error": "错误描述",
+  "details": "详细错误信息(可选)"
+}
+```
+
+常见HTTP状态码:
+- 200: 请求成功
+- 201: 创建成功
+- 400: 请求参数错误
+- 404: 资源未找到
+- 500: 服务器内部错误
+
+## 示例前端调用
+
+```javascript
+// 创建学生
+fetch('http://localhost:3000/students', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    name: '张三',
+    studentId: 'S1001'
+  })
+});
+
+// 获取学生卡牌
+fetch('http://localhost:3000/cards/student/S1001')
+  .then(response => response.json())
+  .then(cards => console.log(cards));
+
+// 更新卡牌
+fetch('http://localhost:3000/cards/C001', {
+  method: 'PUT',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    monsterName: '新怪物名称',
+    skill1Attack: 50
+  })
+});
+```

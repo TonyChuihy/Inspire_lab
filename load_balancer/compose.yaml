@@ -1,0 +1,14 @@
+services:
+  load-balancer:
+    image: nginx
+    container_name: nginx
+    # network_mode: "host"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "80:80"
+      - "8082:8082"
+    volumes:
+      - ./nginx/html:/usr/share/nginx/html
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/logs:/var/log/nginx

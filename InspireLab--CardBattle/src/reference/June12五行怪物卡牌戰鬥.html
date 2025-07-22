@@ -1,0 +1,1639 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>五行怪物卡牌對戰遊戲</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .title {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* 卡牌生成頁面樣式 */
+        .card-creation-page {
+            display: block;
+        }
+
+        .cards-section {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+
+        .card-creator {
+            flex: 1;
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+        }
+
+        .card-preview {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .pokemon-card {
+            width: 280px;
+            height: 400px;
+            background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+            border-radius: 15px;
+            border: 6px solid #fbbf24;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 6px 12px 3px 12px;
+            margin: 6px 8px 1px 8px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: none;
+            color: #000;
+            transition: color 0.3s;
+        }
+
+        .card-header.dark-text {
+            color: #fff;
+        }
+
+        .card-name {
+            font-size: 14px;
+            font-weight: bold;
+            text-shadow: none;
+        }
+
+        .card-name.dark-text {
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .card-type {
+            background: #374151;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .energy-symbol {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 4px;
+        }
+
+        .card-image-container {
+            width: 240px;
+            height: 180px;
+            background: #f3f4f6;
+            margin: 1px auto 8px auto;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border: 2px solid #6b7280;
+        }
+
+        .card-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .placeholder-text {
+            color: #6b7280;
+            text-align: center;
+            font-size: 11px;
+        }
+
+        .card-stats {
+            margin: 8px 12px 12px 12px;
+            padding: 0;
+            font-size: 11px;
+            color: #000;
+            transition: color 0.3s;
+        }
+
+        .card-stats.dark-text {
+            color: #fff;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+            background: none;
+            padding: 0;
+        }
+
+        .skill-row {
+            margin-bottom: 60px;
+            line-height: 1.3;
+            background: none;
+            padding: 0;
+        }
+
+        .hp-display {
+            font-size: 13px;
+            font-weight: bold;
+            text-shadow: none;
+        }
+
+        .hp-display.dark-text {
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .attack-display {
+            font-size: 12px;
+            font-weight: bold;
+            text-shadow: none;
+        }
+
+        .attack-display.dark-text {
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .skill-display {
+            font-size: 10px;
+            text-shadow: none;
+        }
+
+        .skill-display.dark-text {
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .card-footer {
+            position: absolute;
+            bottom: 10px;
+            left: 12px;
+            right: 12px;
+            background: none;
+            padding: 0;
+            border-radius: 0;
+            font-size: 9px;
+            color: #000;
+            transition: color 0.3s;
+        }
+
+        .card-footer.dark-text {
+            color: #fff;
+        }
+
+        .footer-row {
+            margin-bottom: 6px;
+            text-shadow: none;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .footer-row.dark-text {
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .weakness-resistance {
+            font-weight: bold;
+        }
+
+        .bottom-stats {
+            text-shadow: none;
+            text-align: center;
+        }
+
+        .bottom-stats.dark-text {
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #374151;
+            font-size: 14px;
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 13px;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none;
+            border-color: #10b981;
+        }
+
+        .form-group textarea {
+            height: 60px;
+            resize: vertical;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input {
+            opacity: 0;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 8px;
+            background: #10b981;
+            color: white;
+            text-align: center;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 13px;
+        }
+
+        .file-input-label:hover {
+            background: #059669;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .constraint-info {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            color: #92400e;
+        }
+
+        .constraint-info strong {
+            color: #78350f;
+        }
+
+        .start-battle-btn {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 30px;
+            box-shadow: 0 8px 20px rgba(220, 38, 38, 0.3);
+        }
+
+        .start-battle-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(220, 38, 38, 0.4);
+        }
+
+        .download-btn {
+            width: 100%;
+            padding: 12px;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: transform 0.2s;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* 戰鬥頁面樣式 */
+        .battle-page {
+            display: none;
+        }
+
+        .battlefield {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            padding: 30px;
+            border-radius: 15px;
+            color: white;
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .battle-card {
+            width: 280px;
+            padding: 15px;
+            background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+            border-radius: 15px;
+            border: 6px solid #fbbf24;
+            color: #000;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .battle-image-container {
+            width: 250px;
+            height: 180px;
+            background: #f3f4f6;
+            margin: 10px auto;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #6b7280;
+        }
+
+        .battle-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .monster-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .monster-type {
+            background: #374151;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            margin-bottom: 8px;
+            display: inline-block;
+        }
+
+        .hp-bar {
+            width: 100%;
+            height: 20px;
+            background: #374151;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+            position: relative;
+        }
+
+        .hp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e 0%, #16a34a 50%, #dc2626 100%);
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+
+        .hp-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .monster-stats {
+            font-size: 14px;
+            margin: 4px 0;
+        }
+
+        .vs-text {
+            font-size: 48px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .action-panel {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .action-btn {
+            padding: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .attack-btn {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: white;
+        }
+
+        .skill-btn {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            color: white;
+        }
+
+        .defend-btn {
+            background: linear-gradient(135deg, #059669, #047857);
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .battle-log {
+            height: 200px;
+            overflow-y: auto;
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            display: block;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .log-attack { background: rgba(220, 38, 38, 0.2); }
+        .log-skill { background: rgba(124, 58, 237, 0.2); }
+        .log-defend { background: rgba(5, 150, 105, 0.2); }
+        .log-system { background: rgba(59, 130, 246, 0.2); }
+
+        .game-over {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .game-over-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .winner-text {
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: #10b981;
+        }
+
+        .restart-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .back-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* 五行顏色樣式 */
+        .wuxing-jin {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        }
+
+        .wuxing-mu {
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+        }
+
+        .wuxing-shui {
+            background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
+        }
+
+        .wuxing-huo {
+            background: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
+        }
+
+        .wuxing-tu {
+            background: linear-gradient(135deg, #d2691e 0%, #8b4513 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 卡牌生成頁面 -->
+        <div class="card-creation-page" id="cardCreationPage">
+            <h1 class="title">🥇 🌳 五行怪物卡牌戰鬥 🌊🔥⛰️</h1>
+            
+            <div class="cards-section">
+                <!-- 左側卡牌 -->
+                <div class="card-creator">
+                    <h3 style="text-align: center; color: #dc2626;">玩家一號</h3>
+                    
+                    <div class="card-preview">
+                        <div class="pokemon-card" id="player1Card">
+                            <div class="card-header" id="player1Header">
+                                <span id="player1Name" class="card-name">水晶獸</span>
+                                <div>
+                                    <span class="card-type" id="player1Type">土</span>
+                                    <span class="energy-symbol" id="player1Energy"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="card-image-container" id="player1ImageContainer">
+                                <div class="placeholder-text">請選擇怪物圖片</div>
+                            </div>
+                            
+                            <div class="card-stats" id="player1Stats">
+                                <div class="stat-row">
+                                    <strong>HP:</strong> <span id="player1Hp" class="hp-display">50</span>
+                                </div>
+                                <div class="stat-row">
+                                    <strong>攻擊:</strong> <span id="player1Attack" class="attack-display">50</span>
+                                </div>
+                                <div class="skill-row">
+                                    <strong>技能一:</strong> <span id="player1Skill1" class="skill-display">土石爆裂：造成11點傷害</span>
+                                </div>
+                                <div class="skill-row">
+                                    <strong>技能二:</strong> <span id="player1Skill2" class="skill-display">大地守護：獲得護盾效果</span>
+                                </div>
+                            </div>
+                            
+                            <div class="card-footer" id="player1Footer">
+                                <div class="footer-row" id="player1FooterRow">
+                                    <span class="weakness-resistance">弱點: <span id="player1Weakness">木 +20</span></span>
+                                    <span class="weakness-resistance">抗性: <span id="player1Resistance">水 -10</span></span>
+                                </div>
+                                <div class="bottom-stats" id="player1BottomStats">
+                                    撤退消耗: <span id="player1Retreat">2</span> | 防禦: <span id="player1Defense">25</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="constraint-info">
+                        <strong>屬性相剋系統：</strong><br>
+                        • <strong>弱點</strong>："木 +20" → 木屬性攻擊土時傷害 ×1.2<br>
+                        • <strong>抗性</strong>："水 -10" → 水屬性攻擊時傷害 ×0.9<br>
+                        <br>
+                        <strong>推薦的技能範例：</strong><br>
+                        • "火球術：造成9點傷害"<br>
+                        • "冰錐：造成11點傷害"<br>
+                        • "治療術：恢復8點生命值"<br>
+                        • "鐵壁：獲得護盾效果"<br>
+                        • "狂化：增加12點攻擊力"
+                    </div>
+
+                    <div class="form-group">
+                        <label for="player1Image">選擇怪物圖片：</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="player1Image" class="file-input" accept="image/*">
+                            <label for="player1Image" class="file-input-label">點擊選擇圖片</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="player1NameInput">怪物名稱：</label>
+                        <input type="text" id="player1NameInput" placeholder="輸入怪物名稱" value="水晶獸">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="player1TypeInput">五行屬性：</label>
+                        <select id="player1TypeInput">
+                            <option value="金">金 (金屬)</option>
+                            <option value="木">木 (植物)</option>
+                            <option value="水">水 (流水)</option>
+                            <option value="火">火 (烈焰)</option>
+                            <option value="土" selected>土 (大地)</option>
+                        </select>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="form-group">
+                            <label for="player1HpInput">HP (生命值)：</label>
+                            <input type="number" id="player1HpInput" value="50" min="10" max="90">
+                            <small>範圍：10-90</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="player1AttackInput">攻擊力：</label>
+                            <input type="number" id="player1AttackInput" value="50" min="10" max="90">
+                            <small>範圍：10-90</small>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="form-group">
+                            <label for="player1DefenseInput">防禦力：</label>
+                            <input type="number" id="player1DefenseInput" value="25" min="0" max="100" readonly>
+                            <small>自動計算 (HP×攻擊÷100)</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="player1RetreatInput">撤退消耗：</label>
+                            <input type="number" id="player1RetreatInput" value="2" min="0" max="5">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="player1WeaknessInput">弱點：</label>
+                        <input type="text" id="player1WeaknessInput" placeholder="例：火 +20" value="木 +20" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="player1ResistanceInput">抗性：</label>
+                        <input type="text" id="player1ResistanceInput" placeholder="例：水 -10" value="土 -10" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="player1Skill1Input">技能一：</label>
+                        <textarea id="player1Skill1Input" placeholder="描述怪物的第一個技能...">土石爆裂：造成11點傷害。</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="player1Skill2Input">技能二：</label>
+                        <textarea id="player1Skill2Input" placeholder="描述怪物的第二個技能...">大地守護：獲得護盾效果。</textarea>
+                    </div>
+
+                    <button class="download-btn" onclick="downloadCard('player1')" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">📥 下載左側卡牌</button>
+                </div>
+
+                <!-- 右側卡牌 -->
+                <div class="card-creator">
+                    <h3 style="text-align: center; color: #2563eb;">玩家二號</h3>
+                    
+                    <div class="card-preview">
+                        <div class="pokemon-card" id="player2Card">
+                            <div class="card-header" id="player2Header">
+                                <span id="player2Name" class="card-name">黃鐵礦獸</span>
+                                <div>
+                                    <span class="card-type" id="player2Type">金</span>
+                                    <span class="energy-symbol" id="player2Energy"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="card-image-container" id="player2ImageContainer">
+                                <div class="placeholder-text">請選擇怪物圖片</div>
+                            </div>
+                            
+                            <div class="card-stats" id="player2Stats">
+                                <div class="stat-row">
+                                    <strong>HP:</strong> <span id="player2Hp" class="hp-display">60</span>
+                                </div>
+                                <div class="stat-row">
+                                    <strong>攻擊:</strong> <span id="player2Attack" class="attack-display">40</span>
+                                </div>
+                                <div class="skill-row">
+                                    <strong>技能一:</strong> <span id="player2Skill1" class="skill-display">狂化：增加12點攻擊力</span>
+                                </div>
+                                <div class="skill-row">
+                                    <strong>技能二:</strong> <span id="player2Skill2" class="skill-display">金石為開：恢復8點生命值</span>
+                                </div>
+                            </div>
+                            
+                            <div class="card-footer" id="player2Footer">
+                                <div class="footer-row" id="player2FooterRow">
+                                    <span class="weakness-resistance">弱點: <span id="player2Weakness">火 +20</span></span>
+                                    <span class="weakness-resistance">抗性: <span id="player2Resistance">木 -10</span></span>
+                                </div>
+                                <div class="bottom-stats" id="player2BottomStats">
+                                    撤退消耗: <span id="player2Retreat">1</span> | 防禦: <span id="player2Defense">24</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="constraint-info">
+                        <strong>遊戲規則：</strong><br>
+                        • HP + 攻擊力 = 100<br>
+                        • 防禦力 = HP × 攻擊力 ÷ 100<br>
+                        • 五行相剋：金克木，木克土，土克水，水克火，火克金<br>
+                        <br>
+                        <strong>傷害計算：</strong><br>
+                        • 普通攻擊 = (攻擊力÷防禦力×2)+3<br>
+                        • 技能攻擊 = 技能數值-防禦力÷10<br>
+                        • 最終傷害 = 基礎傷害×屬性克制×隨機波動(±20%)×防禦狀態<br>
+                        • 防禦狀態：減少30%傷害 / 護盾效果：減少50%傷害
+                    </div>
+
+                    <div class="form-group">
+                        <label for="player2Image">選擇怪物圖片：</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="player2Image" class="file-input" accept="image/*">
+                            <label for="player2Image" class="file-input-label">點擊選擇圖片</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="player2NameInput">怪物名稱：</label>
+                        <input type="text" id="player2NameInput" placeholder="輸入怪物名稱" value="黃鐵礦獸">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="player2TypeInput">五行屬性：</label>
+                        <select id="player2TypeInput">
+                            <option value="金" selected>金 (金屬)</option>
+                            <option value="木">木 (植物)</option>
+                            <option value="水">水 (流水)</option>
+                            <option value="火">火 (烈焰)</option>
+                            <option value="土">土 (大地)</option>
+                        </select>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="form-group">
+                            <label for="player2HpInput">HP (生命值)：</label>
+                            <input type="number" id="player2HpInput" value="60" min="10" max="90">
+                            <small>範圍：10-90</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="player2AttackInput">攻擊力：</label>
+                            <input type="number" id="player2AttackInput" value="40" min="10" max="90">
+                            <small>範圍：10-90</small>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="form-group">
+                            <label for="player2DefenseInput">防禦力：</label>
+                            <input type="number" id="player2DefenseInput" value="24" min="0" max="100" readonly>
+                            <small>自動計算 (HP×攻擊÷100)</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="player2RetreatInput">撤退消耗：</label>
+                            <input type="number" id="player2RetreatInput" value="1" min="0" max="5">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="player2WeaknessInput">弱點：</label>
+                        <input type="text" id="player2WeaknessInput" placeholder="例：火 +20" value="土 +20" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="player2ResistanceInput">抗性：</label>
+                        <input type="text" id="player2ResistanceInput" placeholder="例：水 -10" value="火 -10" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="player2Skill1Input">技能一：</label>
+                        <textarea id="player2Skill1Input" placeholder="描述怪物的第一個技能...">狂化：增加12點攻擊力。</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="player2Skill2Input">技能二：</label>
+                        <textarea id="player2Skill2Input" placeholder="描述怪物的第二個技能...">金石為開：恢復8點生命值。</textarea>
+                    </div>
+
+                    <button class="download-btn" onclick="downloadCard('player2')" style="background: linear-gradient(135deg, #f59e0b, #d97706);">📥 下載右側卡牌</button>
+                </div>
+            </div>
+
+            <button class="start-battle-btn" onclick="startBattle()">⚔️ 開始決鬥</button>
+        </div>
+
+        <!-- 戰鬥頁面 -->
+        <div class="battle-page" id="battlePage">
+            <h1 class="title">⚔️ 五行怪物對戰</h1>
+            
+            <div class="battlefield">
+                <div class="battle-card" id="battlePlayer1Card">
+                    <div class="monster-name" id="battlePlayer1Name">水晶獸</div>
+                    <div class="monster-type" id="battlePlayer1Type">土</div>
+                    <div class="battle-image-container" id="battlePlayer1ImageContainer">
+                        <div class="placeholder-text">等待圖片載入...</div>
+                    </div>
+                    <div class="hp-bar">
+                        <div class="hp-fill" id="battlePlayer1HpFill"></div>
+                        <div class="hp-text" id="battlePlayer1HpText">50/50</div>
+                    </div>
+                    <div class="monster-stats">
+                        攻擊: <span id="battlePlayer1Attack">50</span>
+                    </div>
+                    <div class="monster-stats">
+                        防禦: <span id="battlePlayer1Defense">25</span>
+                    </div>
+                </div>
+
+                <div class="vs-text">VS</div>
+
+                <div class="battle-card" id="battlePlayer2Card">
+                    <div class="monster-name" id="battlePlayer2Name">黃鐵礦獸</div>
+                    <div class="monster-type" id="battlePlayer2Type">金</div>
+                    <div class="battle-image-container" id="battlePlayer2ImageContainer">
+                        <div class="placeholder-text">等待圖片載入...</div>
+                    </div>
+                    <div class="hp-bar">
+                        <div class="hp-fill" id="battlePlayer2HpFill"></div>
+                        <div class="hp-text" id="battlePlayer2HpText">60/60</div>
+                    </div>
+                    <div class="monster-stats">
+                        攻擊: <span id="battlePlayer2Attack">40</span>
+                    </div>
+                    <div class="monster-stats">
+                        防禦: <span id="battlePlayer2Defense">24</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-panel">
+                <h3>⚔️ 全自動戰鬥模式</h3>
+                <p style="text-align: center; margin-bottom: 20px; color: #6b7280;">點擊骰子進行一個回合的戰鬥！</p>
+                <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+                    <button class="action-btn" onclick="nextTurn()" id="diceBtn" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; font-size: 18px; padding: 15px 30px; border-radius: 15px;">
+                        🎲 擲骰子 (等待開始)
+                    </button>
+                </div>
+                
+                <div id="battleLogSection">
+                    <h3>戰鬥記錄：</h3>
+                    <div class="battle-log" id="battleLog"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-over" id="gameOver">
+        <div class="game-over-content">
+            <div class="winner-text" id="winnerText">🎉 勝利！</div>
+            <p id="gameOverMessage">恭喜你贏得了這場史詩般的戰鬥！</p>
+            <button class="restart-btn" onclick="restartBattle()">🔄 重新戰鬥</button>
+            <button class="back-btn" onclick="backToCreation()">🏠 返回創建</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        let gameState = {
+            player1: {},
+            player2: {},
+            currentTurn: 'player1',
+            battleEnded: false,
+            skillCooldown: 0,
+            player1Image: null,
+            player2Image: null
+        };
+
+        // 五行相剋關係
+        const wuxingRelations = {
+            '金': { weakness: '火', resistance: '木' },
+            '木': { weakness: '金', resistance: '土' },
+            '水': { weakness: '土', resistance: '火' },
+            '火': { weakness: '水', resistance: '金' },
+            '土': { weakness: '木', resistance: '水' }
+        };
+
+        // 五行對應顏色
+        const wuxingColors = {
+            '金': {
+                background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                energy: '#f59e0b',
+                isDark: false
+            },
+            '木': {
+                background: 'linear-gradient(135deg, #4ade80 0%, #22c55e 100%)',
+                energy: '#22c55e',
+                isDark: false
+            },
+            '水': {
+                background: 'linear-gradient(135deg, #60a5fa 0%, #2563eb 100%)',
+                energy: '#2563eb',
+                isDark: false
+            },
+            '火': {
+                background: 'linear-gradient(135deg, #f87171 0%, #dc2626 100%)',
+                energy: '#dc2626',
+                isDark: false
+            },
+            '土': {
+                background: 'linear-gradient(135deg, #d2691e 0%, #8b4513 100%)',
+                energy: '#8b4513',
+                isDark: false
+            }
+        };
+
+        // 圖片上傳處理
+        document.getElementById('player1Image').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    gameState.player1Image = e.target.result;
+                    updateCardImage('player1', e.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('player2Image').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    gameState.player2Image = e.target.result;
+                    updateCardImage('player2', e.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function updateCardImage(player, imageSrc) {
+            const container = document.getElementById(`${player}ImageContainer`);
+            container.innerHTML = `<img src="${imageSrc}" alt="怪物圖片" class="card-image">`;
+        }
+
+        function updateBattleImage(player, imageSrc) {
+            const container = document.getElementById(`battle${player.charAt(0).toUpperCase() + player.slice(1)}ImageContainer`);
+            if (imageSrc) {
+                container.innerHTML = `<img src="${imageSrc}" alt="怪物圖片" class="battle-image">`;
+            } else {
+                container.innerHTML = '<div class="placeholder-text">沒有圖片</div>';
+            }
+        }
+
+        function updateHPAttackConstraint(player) {
+            const hpInput = document.getElementById(`${player}HpInput`);
+            const attackInput = document.getElementById(`${player}AttackInput`);
+            const hp = parseInt(hpInput.value) || 0;
+            const attack = parseInt(attackInput.value) || 0;
+            
+            // HP + 攻擊力 = 100，檢查哪個被修改
+            const total = hp + attack;
+            if (total !== 100) {
+                // 根據最後修改的輸入框調整另一個
+                if (document.activeElement === hpInput) {
+                    attackInput.value = 100 - hp;
+                } else if (document.activeElement === attackInput) {
+                    hpInput.value = 100 - attack;
+                }
+            }
+            
+            // 更新顯示
+            document.getElementById(`${player}Hp`).textContent = hpInput.value;
+            document.getElementById(`${player}Attack`).textContent = attackInput.value;
+            
+            // 更新防禦力
+            updateDefenseFromHPAttack(player);
+        }
+
+        function updateDefenseFromHPAttack(player) {
+            const hp = parseInt(document.getElementById(`${player}HpInput`).value) || 0;
+            const attack = parseInt(document.getElementById(`${player}AttackInput`).value) || 0;
+            const defenseInput = document.getElementById(`${player}DefenseInput`);
+            
+            // 防禦力 = HP × 攻擊力 ÷ 100
+            const defense = Math.floor((hp * attack) / 100);
+            defenseInput.value = defense;
+            document.getElementById(`${player}Defense`).textContent = defense;
+        }
+
+        function updateTypeDefaults(player, type) {
+            const relations = wuxingRelations[type];
+            if (relations) {
+                const weaknessText = `${relations.weakness} +20`;
+                const resistanceText = `${relations.resistance} -10`;
+                
+                document.getElementById(`${player}WeaknessInput`).value = weaknessText;
+                document.getElementById(`${player}ResistanceInput`).value = resistanceText;
+                document.getElementById(`${player}Weakness`).textContent = weaknessText;
+                document.getElementById(`${player}Resistance`).textContent = resistanceText;
+            }
+        }
+
+        function updateCardColors(player) {
+            const cardElement = document.getElementById(`${player}Card`);
+            const energySymbol = document.getElementById(`${player}Energy`);
+            const type = document.getElementById(`${player}TypeInput`).value;
+            
+            // 獲取所有需要改變顏色的元素
+            const cardHeader = document.getElementById(`${player}Header`);
+            const cardName = document.getElementById(`${player}Name`);
+            const cardStats = document.getElementById(`${player}Stats`);
+            const cardFooter = document.getElementById(`${player}Footer`);
+            const footerRow = document.getElementById(`${player}FooterRow`);
+            const bottomStats = document.getElementById(`${player}BottomStats`);
+            
+            const colors = wuxingColors[type];
+            if (colors) {
+                cardElement.style.background = colors.background;
+                energySymbol.style.background = colors.energy;
+                
+                // 收集所有文字元素
+                const textElements = [
+                    cardHeader, cardName, cardStats, cardFooter, footerRow, bottomStats
+                ];
+                
+                // 所有屬性都使用黑色文字
+                textElements.forEach(element => {
+                    if (element) {
+                        element.classList.remove('dark-text');
+                    }
+                });
+            }
+        }
+
+        // 即時更新卡牌內容
+        function setupRealTimeUpdates() {
+            // 為兩個玩家設置更新
+            ['player1', 'player2'].forEach(player => {
+                // HP和攻擊力變更時互相調整
+                document.getElementById(`${player}HpInput`).addEventListener('input', function() {
+                    updateHPAttackConstraint(player);
+                });
+
+                document.getElementById(`${player}AttackInput`).addEventListener('input', function() {
+                    updateHPAttackConstraint(player);
+                });
+
+                // 其他輸入框的即時更新
+                const inputs = [
+                    { id: `${player}NameInput`, target: `${player}Name` },
+                    { id: `${player}TypeInput`, target: `${player}Type` },
+                    { id: `${player}RetreatInput`, target: `${player}Retreat` },
+                    { id: `${player}Skill1Input`, target: `${player}Skill1` },
+                    { id: `${player}Skill2Input`, target: `${player}Skill2` }
+                ];
+
+                inputs.forEach(input => {
+                    document.getElementById(input.id).addEventListener('input', function() {
+                        document.getElementById(input.target).textContent = this.value;
+                        
+                        // 如果是屬性類型變更，也要更新顏色和預設值
+                        if (input.id === `${player}TypeInput`) {
+                            updateCardColors(player);
+                            updateTypeDefaults(player, this.value);
+                        }
+                    });
+                });
+            });
+        }
+
+        // 戰鬥系統
+        function startBattle() {
+            // 初始化玩家數據，包含技能描述
+            gameState.player1 = {
+                name: document.getElementById('player1NameInput').value,
+                type: document.getElementById('player1TypeInput').value,
+                maxHp: parseInt(document.getElementById('player1HpInput').value),
+                currentHp: parseInt(document.getElementById('player1HpInput').value),
+                attack: parseInt(document.getElementById('player1AttackInput').value),
+                defense: parseInt(document.getElementById('player1DefenseInput').value),
+                skill1: document.getElementById('player1Skill1Input').value,
+                skill2: document.getElementById('player1Skill2Input').value,
+                isDefending: false
+            };
+
+            gameState.player2 = {
+                name: document.getElementById('player2NameInput').value,
+                type: document.getElementById('player2TypeInput').value,
+                maxHp: parseInt(document.getElementById('player2HpInput').value),
+                currentHp: parseInt(document.getElementById('player2HpInput').value),
+                attack: parseInt(document.getElementById('player2AttackInput').value),
+                defense: parseInt(document.getElementById('player2DefenseInput').value),
+                skill1: document.getElementById('player2Skill1Input').value,
+                skill2: document.getElementById('player2Skill2Input').value,
+                isDefending: false
+            };
+
+            // 隨機決定先手
+            gameState.currentTurn = Math.random() < 0.5 ? 'player1' : 'player2';
+            gameState.battleEnded = false;
+            gameState.skillCooldown = 0;
+
+            // 更新UI
+            updateBattleUI();
+            updateBattleImage('player1', gameState.player1Image);
+            updateBattleImage('player2', gameState.player2Image);
+            document.getElementById('cardCreationPage').style.display = 'none';
+            document.getElementById('battlePage').style.display = 'block';
+            
+            addBattleLog('🎮 戰鬥開始！', 'system');
+            addBattleLog(`${gameState.player1.name} VS ${gameState.player2.name}`, 'system');
+            addBattleLog(`🎯 ${gameState[gameState.currentTurn].name} 獲得先手權！`, 'system');
+        }
+
+        function updateBattleUI() {
+            // 更新玩家1卡牌
+            if (gameState.player1 && gameState.player1.name) {
+                document.getElementById('battlePlayer1Name').textContent = gameState.player1.name;
+                document.getElementById('battlePlayer1Type').textContent = gameState.player1.type.toUpperCase();
+                // 顯示當前攻擊力（包含加成）
+                const currentAttack = gameState.player1.attack + (gameState.player1.tempAttackBoost || 0);
+                document.getElementById('battlePlayer1Attack').textContent = currentAttack;
+                // 顯示當前防禦力（包含加成）
+                const currentDefense = gameState.player1.defense + (gameState.player1.tempDefenseBoost || 0);
+                document.getElementById('battlePlayer1Defense').textContent = currentDefense;
+                document.getElementById('battlePlayer1Card').className = `battle-card wuxing-${getWuxingClass(gameState.player1.type)}`;
+            }
+            
+            // 更新玩家2卡牌
+            if (gameState.player2 && gameState.player2.name) {
+                document.getElementById('battlePlayer2Name').textContent = gameState.player2.name;
+                document.getElementById('battlePlayer2Type').textContent = gameState.player2.type.toUpperCase();
+                // 顯示當前攻擊力（包含加成）
+                const currentAttack = gameState.player2.attack + (gameState.player2.tempAttackBoost || 0);
+                document.getElementById('battlePlayer2Attack').textContent = currentAttack;
+                // 顯示當前防禦力（包含加成）
+                const currentDefense = gameState.player2.defense + (gameState.player2.tempDefenseBoost || 0);
+                document.getElementById('battlePlayer2Defense').textContent = currentDefense;
+                document.getElementById('battlePlayer2Card').className = `battle-card wuxing-${getWuxingClass(gameState.player2.type)}`;
+            }
+
+            // 更新生命值條
+            if (gameState.player1 && gameState.player2) {
+                updateHpBar('player1');
+                updateHpBar('player2');
+            }
+
+            // 更新骰子按鈕
+            const diceBtn = document.getElementById('diceBtn');
+            if (!diceBtn) return;
+            
+            if (gameState.battleEnded) {
+                diceBtn.disabled = true;
+                diceBtn.innerHTML = '🏁 戰鬥結束';
+            } else if (gameState.player1 && gameState.player1.name && gameState.player2 && gameState.player2.name) {
+                diceBtn.disabled = false;
+                diceBtn.innerHTML = `🎲 擲骰子 (下個回合：${gameState[gameState.currentTurn].name})`;
+            } else {
+                diceBtn.innerHTML = '🎲 擲骰子 (等待開始)';
+            }
+        }
+
+        function getWuxingClass(type) {
+            const classMap = {
+                '金': 'jin',
+                '木': 'mu', 
+                '水': 'shui',
+                '火': 'huo',
+                '土': 'tu'
+            };
+            return classMap[type] || 'jin';
+        }
+
+        function updateHpBar(player) {
+            const monster = gameState[player];
+            const hpPercentage = (monster.currentHp / monster.maxHp) * 100;
+            
+            document.getElementById(`battle${player.charAt(0).toUpperCase() + player.slice(1)}HpFill`).style.width = `${hpPercentage}%`;
+            document.getElementById(`battle${player.charAt(0).toUpperCase() + player.slice(1)}HpText`).textContent = `${monster.currentHp}/${monster.maxHp}`;
+        }
+
+        // 解析技能效果
+        function parseSkillEffect(skillDescription) {
+            const effects = {
+                damage: 0,
+                heal: 0,
+                defenseBoost: 0,
+                attackBoost: 0,
+                shield: false
+            };
+            
+            // 匹配傷害數值 (例如：造成45點傷害、造成55點傷害)
+            const damageMatch = skillDescription.match(/造成(\d+)點傷害/);
+            if (damageMatch) {
+                effects.damage = parseInt(damageMatch[1]);
+            }
+            
+            // 匹配治療數值 (例如：恢復30點生命值)
+            const healMatch = skillDescription.match(/恢復(\d+)點生命值/);
+            if (healMatch) {
+                effects.heal = parseInt(healMatch[1]);
+            }
+            
+            // 匹配防禦力提升 (例如：增加自身10點防禦力)
+            const defenseMatch = skillDescription.match(/增加.*?(\d+)點防禦力/);
+            if (defenseMatch) {
+                effects.defenseBoost = parseInt(defenseMatch[1]);
+            }
+            
+            // 匹配攻擊力提升 (例如：增加15點攻擊力)
+            const attackMatch = skillDescription.match(/增加.*?(\d+)點攻擊力/);
+            if (attackMatch) {
+                effects.attackBoost = parseInt(attackMatch[1]);
+            }
+            
+            // 匹配護盾效果 (例如：減少下次受到的傷害50%、金屬防護)
+            if (skillDescription.includes('減少') && skillDescription.includes('傷害') || 
+                skillDescription.includes('防護') || skillDescription.includes('守護')) {
+                effects.shield = true;
+            }
+            
+            return effects;
+        }
+
+        // 全自動戰鬥系統
+        function nextTurn() {
+            if (gameState.battleEnded) return;
+            
+            try {
+                const attacker = gameState[gameState.currentTurn];
+                const defender = gameState[gameState.currentTurn === 'player1' ? 'player2' : 'player1'];
+                
+                // 隨機選擇行動
+                const actions = ['attack', 'skill1', 'skill2', 'defend'];
+                const randomAction = actions[Math.floor(Math.random() * actions.length)];
+                
+                let damage = 0;
+                let message = '';
+
+                switch (randomAction) {
+                    case 'attack':
+                        damage = calculateDamage(attacker, defender, 'normal');
+                        if (defender.isDefending) {
+                            damage = Math.floor(damage * 0.7); // 防禦狀態減少30%傷害
+                            message = `${attacker.name} 使用普通攻擊，但 ${defender.name} 正在防禦，傷害減少30%，受到 ${damage} 點傷害！`;
+                        } else if (defender.shieldActive) {
+                            damage = Math.floor(damage / 2); // 護盾效果減半
+                            message = `${attacker.name} 使用普通攻擊，但 ${defender.name} 有護盾效果，傷害減半，受到 ${damage} 點傷害！`;
+                        } else {
+                            message = `${attacker.name} 使用普通攻擊，對 ${defender.name} 造成 ${damage} 點傷害！`;
+                        }
+                        defender.currentHp = Math.max(0, defender.currentHp - damage);
+                        // 清除護盾效果
+                        if (defender.shieldActive) defender.shieldActive = false;
+                        addBattleLog(message, 'attack');
+                        break;
+
+                    case 'skill1':
+                        executeSkill(attacker, defender, attacker.skill1, 'skill1');
+                        break;
+
+                    case 'skill2':
+                        executeSkill(attacker, defender, attacker.skill2, 'skill2');
+                        break;
+
+                    case 'defend':
+                        attacker.isDefending = true;
+                        message = `${attacker.name} 進入防禦狀態，下次受到的傷害減少30%！`;
+                        addBattleLog(message, 'defend');
+                        break;
+                }
+
+                // 重置對方的防禦狀態（除非當前回合選擇防禦）
+                if (randomAction !== 'defend') {
+                    defender.isDefending = false;
+                }
+
+                // 切換回合
+                gameState.currentTurn = gameState.currentTurn === 'player1' ? 'player2' : 'player1';
+
+                updateBattleUI();
+
+                // 檢查戰鬥是否結束
+                if (defender.currentHp <= 0) {
+                    endBattle(gameState.currentTurn === 'player1' ? 'player2' : 'player1');
+                    return;
+                }
+            } catch (e) {
+                console.error('戰鬥錯誤:', e);
+            }
+        }
+
+        // 執行技能效果
+        function executeSkill(attacker, defender, skillDescription, skillType) {
+            const effects = parseSkillEffect(skillDescription);
+            let messages = [];
+            
+            // 顯示技能使用
+            messages.push(`${attacker.name} 使用技能：${skillDescription}`);
+            
+            // 處理固定傷害效果（不經過複雜計算）
+            if (effects.damage > 0) {
+                let damage = effects.damage;
+                
+                // 簡單的屬性相剋計算
+                const attackerRelations = wuxingRelations[attacker.type];
+                if (attackerRelations && attackerRelations.resistance === defender.type) {
+                    damage = Math.floor(damage * 1.2); // 克制時傷害提升20%
+                    messages.push('💥 效果拔群！');
+                } else if (attackerRelations && attackerRelations.weakness === defender.type) {
+                    damage = Math.floor(damage * 0.8); // 被克制時傷害降低20%
+                    messages.push('😵 效果不佳...');
+                }
+                
+                // 防禦狀態減傷
+                if (defender.isDefending) {
+                    damage = Math.floor(damage / 2);
+                    messages.push(`${defender.name} 正在防禦，傷害減半！`);
+                }
+                
+                defender.currentHp = Math.max(0, defender.currentHp - damage);
+                messages.push(`對 ${defender.name} 造成 ${damage} 點傷害！`);
+            }
+            
+            // 處理治療效果
+            if (effects.heal > 0) {
+                const healAmount = Math.min(effects.heal, attacker.maxHp - attacker.currentHp);
+                attacker.currentHp += healAmount;
+                messages.push(`${attacker.name} 恢復了 ${healAmount} 點生命值！`);
+            }
+            
+            // 處理防禦力提升（戰鬥中臨時提升）
+            if (effects.defenseBoost > 0) {
+                if (!attacker.tempDefenseBoost) attacker.tempDefenseBoost = 0;
+                attacker.tempDefenseBoost += effects.defenseBoost;
+                messages.push(`${attacker.name} 的防禦力增加了 ${effects.defenseBoost} 點！`);
+            }
+            
+            // 處理攻擊力提升（戰鬥中臨時提升）
+            if (effects.attackBoost > 0) {
+                if (!attacker.tempAttackBoost) attacker.tempAttackBoost = 0;
+                attacker.tempAttackBoost += effects.attackBoost;
+                messages.push(`${attacker.name} 的攻擊力增加了 ${effects.attackBoost} 點！`);
+            }
+            
+            // 處理護盾效果（下次受傷減半）
+            if (effects.shield) {
+                attacker.shieldActive = true;
+                messages.push(`${attacker.name} 獲得護盾效果，下次受到的傷害減半！`);
+            }
+            
+            // 如果沒有特殊效果，使用默認技能傷害計算
+            if (effects.damage === 0 && effects.heal === 0 && effects.defenseBoost === 0 && 
+                effects.attackBoost === 0 && !effects.shield) {
+                let damage = calculateDamage(attacker, defender, 'skill');
+                if (defender.isDefending || defender.shieldActive) {
+                    damage = Math.floor(damage / 2);
+                    messages.push(`${defender.name} 有防護效果，傷害減半！`);
+                }
+                defender.currentHp = Math.max(0, defender.currentHp - damage);
+                messages.push(`對 ${defender.name} 造成 ${damage} 點傷害！`);
+            }
+            
+            // 清除使用過的護盾效果
+            if (defender.shieldActive) {
+                defender.shieldActive = false;
+            }
+            
+            // 輸出所有戰鬥訊息
+            messages.forEach(msg => addBattleLog(msg, 'skill'));
+        }
+
+        function calculateDamage(attacker, defender, attackType) {
+            try {
+                // 計算基礎攻擊力（包含臨時加成）
+                let baseDamage = attacker.attack + (attacker.tempAttackBoost || 0);
+                
+                // 技能攻擊威力更大
+                if (attackType === 'skill') {
+                    baseDamage = Math.floor(baseDamage * 1.5);
+                }
+
+                // 屬性相剋計算
+                const attackerRelations = wuxingRelations[attacker.type];
+                if (attackerRelations && attackerRelations.resistance === defender.type) {
+                    baseDamage = Math.floor(baseDamage * 1.3);
+                    addBattleLog('💥 效果拔群！', 'system');
+                } else if (attackerRelations && attackerRelations.weakness === defender.type) {
+                    baseDamage = Math.floor(baseDamage * 0.7);
+                    addBattleLog('😵 效果不佳...', 'system');
+                }
+
+                // 防禦力計算（包含臨時加成）
+                const totalDefense = defender.defense + (defender.tempDefenseBoost || 0);
+                const finalDamage = Math.max(1, baseDamage - Math.floor(totalDefense / 2));
+                
+                // 隨機波動 (±15%)
+                const variation = 0.85 + Math.random() * 0.3;
+                
+                return Math.max(1, Math.floor(finalDamage * variation));
+            } catch (e) {
+                console.error('傷害計算錯誤:', e);
+                return 1;
+            }
+        }
+
+        function calculateDamage(attacker, defender, attackType) {
+            try {
+                let baseDamage = attacker.attack;
+                
+                // 技能攻擊威力更大
+                if (attackType === 'skill') {
+                    baseDamage = Math.floor(baseDamage * 1.8);
+                }
+
+                // 屬性相剋計算
+                const attackerRelations = wuxingRelations[attacker.type];
+                if (attackerRelations && attackerRelations.resistance === defender.type) {
+                    baseDamage = Math.floor(baseDamage * 1.5);
+                    addBattleLog('💥 效果拔群！', 'system');
+                } else if (attackerRelations && attackerRelations.weakness === defender.type) {
+                    baseDamage = Math.floor(baseDamage * 0.7);
+                    addBattleLog('😵 效果不佳...', 'system');
+                }
+
+                // 防禦力計算
+                const finalDamage = Math.max(1, baseDamage - defender.defense);
+                
+                // 隨機波動 (±20%)
+                const variation = 0.8 + Math.random() * 0.4;
+                
+                // 傷害調整到合理範圍
+                return Math.max(1, Math.floor(finalDamage * variation / 3));
+            } catch (e) {
+                console.error('傷害計算錯誤:', e);
+                return 1;
+            }
+        }
+
+        function addBattleLog(message, type) {
+            const log = document.getElementById('battleLog');
+            if (!log) return;
+            
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = message;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function endBattle(winner) {
+            gameState.battleEnded = true;
+            const gameOverDiv = document.getElementById('gameOver');
+            const winnerText = document.getElementById('winnerText');
+            const gameOverMessage = document.getElementById('gameOverMessage');
+
+            const winnerData = gameState[winner];
+            winnerText.textContent = '🎉 勝利！';
+            winnerText.style.color = '#10b981';
+            gameOverMessage.textContent = `恭喜！${winnerData.name} 贏得了這場史詩般的戰鬥！`;
+            addBattleLog(`🏆 ${winnerData.name} 獲得勝利！`, 'system');
+
+            gameOverDiv.style.display = 'flex';
+        }
+
+        function restartBattle() {
+            document.getElementById('gameOver').style.display = 'none';
+            document.getElementById('battleLog').innerHTML = '';
+            
+            // 重置戰鬥狀態
+            gameState.player1.currentHp = gameState.player1.maxHp;
+            gameState.player2.currentHp = gameState.player2.maxHp;
+            gameState.player1.isDefending = false;
+            gameState.player2.isDefending = false;
+            // 重新隨機決定先手
+            gameState.currentTurn = Math.random() < 0.5 ? 'player1' : 'player2';
+            gameState.battleEnded = false;
+            gameState.skillCooldown = 0;
+            
+            updateBattleUI();
+            addBattleLog('🎮 戰鬥重新開始！', 'system');
+            addBattleLog(`${gameState.player1.name} VS ${gameState.player2.name}`, 'system');
+            addBattleLog(`🎯 ${gameState[gameState.currentTurn].name} 獲得先手權！`, 'system');
+        }
+
+        function backToCreation() {
+            document.getElementById('gameOver').style.display = 'none';
+            document.getElementById('battlePage').style.display = 'none';
+            document.getElementById('cardCreationPage').style.display = 'block';
+            document.getElementById('battleLog').innerHTML = '';
+            
+            // 重置遊戲狀態
+            gameState = {
+                player1: {},
+                player2: {},
+                currentTurn: 'player1',
+                battleEnded: false,
+                skillCooldown: 0,
+                player1Image: null,
+                player2Image: null
+            };
+            
+            // 重置骰子按鈕
+            const diceBtn = document.getElementById('diceBtn');
+            if (diceBtn) {
+                diceBtn.innerHTML = '🎲 擲骰子 (等待開始)';
+            }
+        }
+
+        // 下載卡牌功能
+        function downloadCard(player) {
+            const cardElement = document.getElementById(`${player}Card`);
+            
+            // 使用html2canvas來截圖卡牌
+            html2canvas(cardElement, {
+                scale: 2,
+                backgroundColor: null,
+                useCORS: true
+            }).then(canvas => {
+                // 創建下載鏈接
+                const link = document.createElement('a');
+                const monsterName = document.getElementById(`${player}NameInput`).value;
+                link.download = `${monsterName}_五行卡牌.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }).catch(error => {
+                console.error('截圖失敗:', error);
+                alert('下載失敗，請稍後再試。');
+            });
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                setupRealTimeUpdates();
+                updateCardColors('player1');
+                updateCardColors('player2');
+                updateTypeDefaults('player1', '土');
+                updateTypeDefaults('player2', '金');
+                updateHPAttackConstraint('player1');
+                updateHPAttackConstraint('player2');
+                
+                // 確保骰子按鈕初始狀態正確
+                const diceBtn = document.getElementById('diceBtn');
+                if (diceBtn) {
+                    diceBtn.innerHTML = '🎲 擲骰子 (等待開始)';
+                }
+            } catch (e) {
+                console.error('初始化錯誤:', e);
+            }
+        });
+    </script>
+</body>
+</html>
