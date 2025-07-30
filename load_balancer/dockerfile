@@ -1,0 +1,7 @@
+# Dockerfile
+FROM nginx:latest
+WORKDIR /etc/nginx/script
+COPY script /etc/nginx/script
+RUN apt-get update && apt-get install -y nodejs npm && npm install -g http 
+
+
