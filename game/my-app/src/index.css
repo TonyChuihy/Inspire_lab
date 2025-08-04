@@ -1,0 +1,156 @@
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light;
+  color: #333333; /* 深灰色文字 */
+  background-color: #ffffff; /* 白色背景 */
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #1a73e8; /* 蓝色链接 */
+  text-decoration: inherit;
+}
+a:hover {
+  color: #0d5bbc; /* 深蓝色悬停 */
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #f8f9fa; /* 浅灰色背景 */
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+  color: #1a73e8; /* 蓝色标题 */
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a73e8; /* 蓝色按钮 */
+  color: white; /* 白色文字 */
+  cursor: pointer;
+  transition: all 0.25s;
+}
+button:hover {
+  background-color: #0d5bbc; /* 深蓝色悬停 */
+  border-color: #0d5bbc;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto rgba(26, 115, 232, 0.3); /* 蓝色轮廓 */
+}
+
+/* 游戏特定样式 */
+.app {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+  background-color: white; /* 白色背景 */
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.setup-phase, 
+.truth-input-phase, 
+.role-assignment-phase, 
+.complete-phase {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.form-group {
+  margin: 1.5rem 0;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+  color: #555; /* 灰色文字 */
+}
+
+.form-group input {
+  padding: 0.8rem;
+  width: 100px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+}
+
+textarea {
+  width: 100%;
+  height: 120px;
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+  resize: vertical;
+}
+
+.blank-screen {
+  background-color: #f8f9fa;
+  color: #333;
+  padding: 3rem;
+  border-radius: 10px;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border: 2px dashed #1a73e8; /* 蓝色虚线边框 */
+}
+
+.role-info {
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 10px;
+  margin: 1.5rem 0;
+  border-left: 4px solid #1a73e8; /* 蓝色左侧边框 */
+}
+
+.truth-display {
+  background-color: #e8f0fe; /* 浅蓝色背景 */
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+  color: #1a73e8; /* 蓝色文字 */
+}
+
+.initial-prompt {
+  padding: 2rem 0;
+}
+
+/* 移除暗色模式 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color: #333333;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #0d5bbc;
+  }
+  button {
+    background-color: #1a73e8;
+  }
+}
