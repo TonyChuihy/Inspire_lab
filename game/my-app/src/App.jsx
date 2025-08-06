@@ -1,234 +1,345 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { io } from "socket.io-client";
 import "./App.css";
 
+const socket = io("http://172.18.4.68:3001");
+
 function App() {
-  // 游戏状态
-  const [gamePhase, setGamePhase] = useState("setup"); // setup -> firstPlayerRole -> truthInput -> roleAssignment -> complete
-  const [players, setPlayers] = useState([]);
-  const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
-  const [showRole, setShowRole] = useState(false);
-  const [showBlank, setShowBlank] = useState(false);
-
-  // 游戏设置
-  const [playerCount, setPlayerCount] = useState(6);
-  const [seerCount, setSeerCount] = useState(1);
-  const [wolfCount, setWolfCount] = useState(2);
-
-  // 真言
+  const [gameState, setGameState] = useState(null);
+  const [playerName, setPlayerName] = useState("");
+  const [isConnected, setIsConnected] = useState(false);
+  const [currentPlayer, setCurrentPlayer] = useState(null);
   const [truth, setTruth] = useState("");
 
-  // 初始化游戏
-  const startGame = () => {
-    // 验证输入
-    if (playerCount < seerCount + wolfCount + 1) {
-      alert("村民数量不能为0，请调整玩家数量或角色数量");
-      return;
-    }
+  useEffect(() => {
+    socket.on("connect", () => {
+      setIsConnected(true);
+    });
 
-    // 创建角色数组
-    const roles = [];
-    for (let i = 0; i < seerCount; i++) roles.push("先知");
-    for (let i = 0; i < wolfCount; i++) roles.push("狼人");
-    while (roles.length < playerCount) roles.push("村民");
+    socket.on("game-state", (state) => {
+      setGameState(state);
+      setCurrentPlayer(state.players.find((p) => p.id === socket.id));
+    });
 
-    // 打乱角色顺序
-    for (let i = roles.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [roles[i], roles[j]] = [roles[j], roles[i]];
-    }
+    return () => {
+      socket.off("connect");
+      socket.off("game-state");
+    };
+  }, []);
 
-    // 创建玩家数组
-    const newPlayers = roles.map((role, index) => ({
-      id: index + 1,
-      role,
-      hasSeenRole: false,
-    }));
-
-    setPlayers(newPlayers);
-    setGamePhase("firstPlayerRole"); // 先让第一位玩家查看身份
-  };
-
-  // 第一位玩家确认身份后
-  const confirmFirstPlayerRole = () => {
-    setGamePhase("truthInput");
-  };
-
-  // 提交真言
-  const submitTruth = () => {
-    if (!truth.trim()) {
-      alert("请输入真言");
-      return;
-    }
-
-    // 标记第一位玩家已查看角色
-    const updatedPlayers = [...players];
-    updatedPlayers[0].hasSeenRole = true;
-    setPlayers(updatedPlayers);
-
-    // 如果不是单人游戏，进入角色分配阶段
-    if (players.length > 1) {
-      setCurrentPlayerIndex(1); // 从第二位玩家开始
-      setGamePhase("roleAssignment");
-    } else {
-      setGamePhase("complete");
+  const handleJoin = () => {
+    if (playerName.trim()) {
+      socket.emit("player-join", playerName.trim());
     }
   };
 
-  // 显示下一个玩家角色
-  const showNextPlayer = () => {
-    // 标记当前玩家已查看角色
-    const updatedPlayers = [...players];
-    updatedPlayers[currentPlayerIndex].hasSeenRole = true;
-    setPlayers(updatedPlayers);
-
-    // 显示空白页5秒
-    setShowRole(false);
-    setShowBlank(true);
-
-    setTimeout(() => {
-      setShowBlank(false);
-
-      // 检查是否所有玩家都已查看角色
-      if (currentPlayerIndex < players.length - 1) {
-        setCurrentPlayerIndex(currentPlayerIndex + 1);
-        setShowRole(true);
-      } else {
-        setGamePhase("complete");
-      }
-    }, 5000);
+  const toggleReady = () => {
+    socket.emit("player-ready");
   };
 
-  // 重新开始游戏
-  const restartGame = () => {
-    setGamePhase("setup");
-    setCurrentPlayerIndex(0);
-    setTruth("");
-    setShowRole(false);
-    setShowBlank(false);
+  const submitTruth = (truth) => {
+    socket.emit("submit-truth", truth);
   };
 
-  // 获取当前玩家
-  const currentPlayer = players[currentPlayerIndex];
+  if (!isConnected) {
+    return <div>连接服务器中...</div>;
+  }
 
-  return (
-    <div classname="app">
-      <div className="app">
-        {gamePhase === "setup" && (
-          <div className="setup-phase">
-            <h1>狼人真言游戏设置</h1>
-            <div className="form-group">
-              <label>玩家总数 (3-12):</label>
-              <input
-                type="number"
-                min="3"
-                max="12"
-                value={playerCount}
-                onChange={(e) => setPlayerCount(parseInt(e.target.value))}
-              />
-            </div>
-            <div className="form-group">
-              <label>先知数量 (1):</label>
-              <input
-                type="number"
-                min="1"
-                max="1"
-                value={seerCount}
-                onChange={(e) => setSeerCount(parseInt(e.target.value))}
-              />
-            </div>
-            <div className="form-group">
-              <label>狼人数量 (1-2):</label>
-              <input
-                type="number"
-                min="1"
-                max="2"
-                value={wolfCount}
-                onChange={(e) => setWolfCount(parseInt(e.target.value))}
-              />
-            </div>
-            <button onClick={startGame}>开始游戏</button>
+  if (!gameState) {
+    return <div>加载游戏状态...</div>;
+  }
+
+  // 配置阶段
+  if (gameState.phase === "config" && !currentPlayer) {
+    return (
+      <div className="container config-phase">
+        <div className="header">
+          <h1>狼人真言</h1>
+          <div className="logo">🔮</div>
+        </div>
+
+        <div className="card">
+          <h2>加入游戏</h2>
+          <div className="input-group">
+            <input
+              type="text"
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
+              placeholder="输入你的名字"
+            />
+            <button className="primary" onClick={handleJoin}>
+              加入游戏
+            </button>
           </div>
-        )}
+        </div>
 
-        {gamePhase === "firstPlayerRole" && (
-          <div className="role-display">
-            <h1>第一位玩家的身份</h1>
-            <div className="role-info">
-              <p>
-                你的角色是: <strong>{players[0]?.role}</strong>
-              </p>
-              <p>作为第一位玩家，你需要设置一个真言。</p>
-              <p>狼人和先知将会知道这个真言。</p>
-            </div>
-            <button onClick={confirmFirstPlayerRole}>确认身份并设置真言</button>
+        <div className="game-info">
+          <p>等待管理员开始游戏...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 准备阶段
+  if (gameState.phase === "config" && currentPlayer) {
+    return (
+      <div className="container preparation-phase">
+        <div className="header">
+          <h1>等待开始</h1>
+          <div className="player-count">{gameState.players.length}位玩家</div>
+        </div>
+
+        <div className="card player-list">
+          <h2>玩家列表</h2>
+          <ul>
+            {gameState.players.map((player) => (
+              <li key={player.id} className={player.isReady ? "ready" : ""}>
+                <span className="player-name">{player.name}</span>
+                <span className="status">
+                  {player.isReady ? "✅ 已准备" : "❌ 未准备"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="action-button">
+          <button
+            className={currentPlayer.isReady ? "secondary" : "primary"}
+            onClick={toggleReady}
+          >
+            {currentPlayer.isReady ? "取消准备" : "准备"}
+          </button>
+        </div>
+
+        <div className="game-info">
+          <p>所有玩家准备后，管理员将开始游戏</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 角色分配阶段
+  if (gameState.phase === "roleAssignment") {
+    return (
+      <div className="container role-assignment">
+        <div className="header">
+          <h1>你的身份</h1>
+          <div className="role-icon">
+            {currentPlayer.role === "狼人"
+              ? "🐺"
+              : currentPlayer.role === "先知"
+              ? "🔮"
+              : "👨‍🌾"}
           </div>
-        )}
+        </div>
 
-        {gamePhase === "truthInput" && (
-          <div className="truth-input-phase">
-            <h1>设置真言</h1>
-            <p>
-              玩家 {players[0]?.id} ({players[0]?.role})，请设置一个真言：
-            </p>
+        <div className="card">
+          <h2 className="role-name">{currentPlayer.role}</h2>
+
+          {currentPlayer.role === "狼人" && (
+            <div className="role-description">
+              <p>你的目标：帶偏方向，找出先知，隐藏自己！</p>
+            </div>
+          )}
+
+          {currentPlayer.role === "先知" && (
+            <div className="role-description">
+              <p>你的目标：引導方向，找出狼人，隐藏自己！</p>
+            </div>
+          )}
+
+          {currentPlayer.role === "村民" && (
+            <div className="role-description">
+              <p>你需要找出真言，找出狼人</p>
+            </div>
+          )}
+
+          {currentPlayer.id === gameState.truthTeller && (
+            <div className="special-role">
+              <div className="badge">🎤</div>
+              <p>你被选为设定真言的村長</p>
+            </div>
+          )}
+        </div>
+
+        <div className="game-info">
+          <p>请记住你的角色，游戏即将开始</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 真言输入阶段
+  if (
+    gameState.phase === "truthInput" &&
+    currentPlayer.id === gameState.truthTeller
+  ) {
+    return (
+      <div className="container truth-input">
+        <div className="header">
+          <h1>设定真言</h1>
+          <div className="role-icon">🎤</div>
+        </div>
+
+        <div className="card">
+          <p>
+            作为<b>{currentPlayer.role}</b>，你需要为游戏设定一个真言
+          </p>
+
+          <div className="input-group">
             <textarea
               value={truth}
               onChange={(e) => setTruth(e.target.value)}
-              placeholder="输入真言..."
+              placeholder="输入一个句子作为真言..."
+              rows="4"
             />
-            <button onClick={submitTruth}>提交真言</button>
+            <button
+              className="primary"
+              onClick={() => submitTruth(truth)}
+              disabled={!truth.trim()}
+            >
+              提交真言
+            </button>
           </div>
-        )}
+        </div>
 
-        {gamePhase === "roleAssignment" && (
-          <div className="role-assignment-phase">
-            {showBlank && (
-              <div className="blank-screen">
-                <h1>请将设备传递给下一位玩家</h1>
-              </div>
-            )}
+        <div className="game-info">
+          <p>狼人和先知将知道这个真言</p>
+        </div>
+      </div>
+    );
+  } else if (gameState.phase === "truthInput") {
+    const truthTeller = gameState.players.find(
+      (p) => p.id === gameState.truthTeller
+    );
 
-            {!showBlank && showRole && (
-              <div className="role-display">
-                <h1>玩家 {currentPlayer?.id} 的身份</h1>
-                <div className="role-info">
-                  <p>
-                    你的角色是: <strong>{currentPlayer?.role}</strong>
-                  </p>
-                  {(currentPlayer?.role === "先知" ||
-                    currentPlayer?.role === "狼人") && (
-                    <div className="truth-display">
-                      <h3>真言:</h3>
-                      <p>{truth}</p>
-                    </div>
-                  )}
-                  {currentPlayer?.role === "村民" && (
-                    <p>作为村民，你不知道真言。</p>
-                  )}
-                </div>
-                <button onClick={showNextPlayer}>
-                  {currentPlayerIndex < players.length - 1
-                    ? "下一位玩家"
-                    : "完成"}
-                </button>
-              </div>
-            )}
+    return (
+      <div className="container waiting-truth">
+        <div className="header">
+          <h1>等待真言</h1>
+          <div className="spinner"></div>
+        </div>
 
-            {!showBlank && !showRole && (
-              <div className="initial-prompt">
-                <h1>准备查看玩家 {currentPlayer?.id} 的身份</h1>
-                <button onClick={() => setShowRole(true)}>查看身份</button>
-              </div>
-            )}
+        <div className="card">
+          <div className="waiting-message">
+            <p>
+              村長 <span className="highlight">{truthTeller.name}</span>{" "}
+              正在设定真言
+            </p>
+            <p>请耐心等待...</p>
           </div>
-        )}
+        </div>
 
-        {gamePhase === "complete" && (
-          <div className="complete-phase">
-            <h1>所有玩家已查看身份</h1>
-            <p>游戏可以开始了！</p>
-            <button onClick={restartGame}>重新开始</button>
+        <div className="game-info">
+          <p>真言设定后，先知和狼人将能看到它</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 真言揭示阶段
+  if (gameState.phase === "truthReveal") {
+    return (
+      <div className="container truth-reveal">
+        <div className="header">
+          <h1>真言揭示</h1>
+          <div className="role-icon">
+            {currentPlayer.role === "狼人"
+              ? "🐺"
+              : currentPlayer.role === "先知"
+              ? "🔮"
+              : "👨‍🌾"}
           </div>
-        )}
+        </div>
+
+        <div className="card">
+          {currentPlayer.role === "狼人" || currentPlayer.role === "先知" ? (
+            <>
+              <div className="truth-card">
+                <div className="truth-icon">📜</div>
+                <h3>你知道的真言是:</h3>
+                <div className="truth-content">{gameState.truth}</div>
+              </div>
+              <p className="hint">请记住这个真言，它将在游戏中起到关键作用</p>
+            </>
+          ) : (
+            <>
+              <div className="truth-card villager">
+                <div className="truth-icon">❓</div>
+                <h3>作为村民</h3>
+                <div className="truth-content">你不知道真言内容</div>
+              </div>
+              <p className="hint">你需要通过对话找出真言</p>
+            </>
+          )}
+        </div>
+
+        <div className="game-info">
+          <p>管理员将很快开始游戏</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 计时阶段
+  if (gameState.phase === "timer") {
+    const minutes = Math.floor(gameState.timer / 60);
+    const seconds = gameState.timer % 60;
+
+    return (
+      <div className="container timer-phase">
+        <div className="header">
+          <h1>游戏进行中</h1>
+          <div className="role-icon">
+            {currentPlayer.role === "狼人"
+              ? "🐺"
+              : currentPlayer.role === "先知"
+              ? "🔮"
+              : "👨‍🌾"}
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="timer-display">
+            <div className="time">
+              {minutes}:{seconds < 10 ? "0" + seconds : seconds}
+            </div>
+            <div className="label">剩余时间</div>
+          </div>
+
+          <div className="role-reminder">
+            <p>
+              你的角色: <span className="highlight">{currentPlayer.role}</span>
+            </p>
+          </div>
+
+          <div className="game-tips">
+            {currentPlayer.role === "狼人" && (
+              <p>阻止村民，找到先知，不要暴露</p>
+            )}
+            {currentPlayer.role === "先知" && <p>協助村民，不要暴露</p>}
+            {currentPlayer.role === "村民" && <p>找出真言，找出狼人</p>}
+          </div>
+        </div>
+
+        <div className="game-info">
+          <p>游戏结束后</p>
+          <p>若找出真言：狼人請指認先知</p>
+          <p>若未能找出真言：請指認狼人</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container unknown-phase">
+      <div className="header">
+        <h1>游戏状态错误</h1>
+      </div>
+      <div className="card">
+        <p>未知游戏阶段，请联系管理员</p>
+        <p>当前阶段: {gameState.phase}</p>
       </div>
     </div>
   );

@@ -1,156 +1,351 @@
+/* 基础样式 */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light;
-  color: #333333; /* 深灰色文字 */
-  background-color: #ffffff; /* 白色背景 */
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --primary-color: #3498db;
+  --secondary-color: #2980b9;
+  --background-color: #f8f9fa;
+  --card-color: #ffffff;
+  --text-color: #333333;
+  --border-color: #e0e0e0;
+  --success-color: #2ecc71;
+  --warning-color: #e74c3c;
+  --highlight-color: #3498db;
 }
 
-a {
-  font-weight: 500;
-  color: #1a73e8; /* 蓝色链接 */
-  text-decoration: inherit;
-}
-a:hover {
-  color: #0d5bbc; /* 深蓝色悬停 */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  padding: 0;
   margin: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#root {
+  height: 100%;
+}
+
+/* 容器样式 */
+.container {
   display: flex;
-  place-items: center;
-  min-width: 320px;
+  flex-direction: column;
   min-height: 100vh;
-  background-color: #f8f9fa; /* 浅灰色背景 */
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-  color: #1a73e8; /* 蓝色标题 */
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a73e8; /* 蓝色按钮 */
-  color: white; /* 白色文字 */
-  cursor: pointer;
-  transition: all 0.25s;
-}
-button:hover {
-  background-color: #0d5bbc; /* 深蓝色悬停 */
-  border-color: #0d5bbc;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto rgba(26, 115, 232, 0.3); /* 蓝色轮廓 */
-}
-
-/* 游戏特定样式 */
-.app {
-  max-width: 800px;
+  padding: 20px;
+  max-width: 500px;
   margin: 0 auto;
-  padding: 2rem;
+  background-color: var(--background-color);
+}
+
+.header {
   text-align: center;
-  background-color: white; /* 白色背景 */
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 20px 0;
+  margin-bottom: 20px;
 }
 
-.setup-phase, 
-.truth-input-phase, 
-.role-assignment-phase, 
-.complete-phase {
-  background-color: white;
-  padding: 2rem;
+.header h1 {
+  font-size: 2.2rem;
+  color: var(--primary-color);
+  margin-bottom: 10px;
+}
+
+.logo {
+  font-size: 3rem;
+  margin-top: 10px;
+}
+
+.player-count {
+  font-size: 1.1rem;
+  color: #777;
+  font-weight: 500;
+}
+
+.role-icon {
+  font-size: 3rem;
+  margin: 10px 0;
+}
+
+/* 卡片样式 */
+.card {
+  background-color: var(--card-color);
+  border-radius: 16px;
+  padding: 25px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.card h2 {
+  margin-bottom: 20px;
+  color: var(--primary-color);
+  font-size: 1.8rem;
+}
+
+/* 输入组 */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin: 20px 0;
+}
+
+input, textarea {
+  width: 100%;
+  padding: 15px;
+  border: 1px solid var(--border-color);
   border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.form-group {
-  margin: 1.5rem 0;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: bold;
-  color: #555; /* 灰色文字 */
-}
-
-.form-group input {
-  padding: 0.8rem;
-  width: 100px;
-  border-radius: 6px;
-  border: 1px solid #ddd;
   font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+input:focus, textarea:focus {
+  border-color: var(--primary-color);
+  outline: none;
 }
 
 textarea {
-  width: 100%;
-  height: 120px;
-  padding: 1rem;
-  margin: 1rem 0;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  font-size: 1rem;
+  min-height: 120px;
   resize: vertical;
 }
 
-.blank-screen {
-  background-color: #f8f9fa;
-  color: #333;
-  padding: 3rem;
+/* 按钮样式 */
+button {
+  padding: 15px 25px;
+  border: none;
   border-radius: 10px;
-  min-height: 300px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+button.primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+button.primary:hover:not(:disabled) {
+  background-color: var(--secondary-color);
+  transform: translateY(-2px);
+}
+
+button.secondary {
+  background-color: #ecf0f1;
+  color: var(--text-color);
+}
+
+button.secondary:hover:not(:disabled) {
+  background-color: #d5dbdb;
+}
+
+/* 玩家列表 */
+.player-list {
+  padding: 0;
+}
+
+.player-list ul {
+  list-style: none;
+}
+
+.player-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.player-list li:last-child {
+  border-bottom: none;
+}
+
+.player-list li.ready {
+  background-color: rgba(46, 204, 113, 0.1);
+  border-radius: 8px;
+}
+
+.player-name {
+  font-weight: 500;
+}
+
+.status {
+  color: #777;
+}
+
+/* 角色分配 */
+.role-name {
+  font-size: 2.5rem;
+  margin: 15px 0;
+  color: var(--primary-color);
+}
+
+.role-description {
+  margin: 20px 0;
+  font-size: 1.1rem;
+  color: #555;
+}
+
+.special-role {
+  margin-top: 25px;
+  padding-top: 15px;
+  border-top: 1px dashed var(--border-color);
+}
+
+.special-role p {
+  margin-top: 10px;
+}
+
+.badge {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+/* 真言相关 */
+.truth-card {
+  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+  border-radius: 12px;
+  padding: 25px;
+  margin: 20px 0;
+}
+
+.truth-card.villager {
+  background: linear-gradient(135deg, #f5f5f5, #eeeeee);
+}
+
+.truth-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+}
+
+.truth-content {
+  font-size: 1.4rem;
+  font-weight: 500;
+  line-height: 1.4;
+  margin: 20px 0;
+  padding: 15px;
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 10px;
+  border-left: 4px solid var(--primary-color);
+}
+
+.hint {
+  color: #777;
+  font-style: italic;
+  margin-top: 15px;
+}
+
+/* 计时器 */
+.timer-display {
+  margin: 25px 0;
+}
+
+.time {
+  font-size: 4rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  font-family: 'Courier New', monospace;
+}
+
+.label {
+  font-size: 1.2rem;
+  color: #777;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.role-reminder {
+  margin: 20px 0;
+  font-size: 1.2rem;
+}
+
+.highlight {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.game-tips {
+  margin-top: 25px;
+  padding: 15px;
+  background-color: rgba(236, 240, 241, 0.5);
+  border-radius: 10px;
+  font-size: 1.1rem;
+}
+
+/* 游戏信息 */
+.game-info {
+  text-align: center;
+  color: #777;
+  margin-top: 15px;
+  padding: 0 15px;
+  font-size: 1rem;
+}
+
+/* 加载动画 */
+.loading-screen {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  border: 2px dashed #1a73e8; /* 蓝色虚线边框 */
+  align-items: center;
+  height: 100vh;
+  text-align: center;
 }
 
-.role-info {
-  background-color: #f8f9fa;
-  padding: 1.5rem;
-  border-radius: 10px;
-  margin: 1.5rem 0;
-  border-left: 4px solid #1a73e8; /* 蓝色左侧边框 */
+.spinner {
+  border: 5px solid rgba(52, 152, 219, 0.2);
+  border-top: 5px solid var(--primary-color);
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
 }
 
-.truth-display {
-  background-color: #f292ff; /* 浅蓝色背景 */
-  padding: 1rem;
-  border-radius: 8px;
-  margin-top: 1rem;
-  color: #e81a1a; 
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-.initial-prompt {
-  padding: 2rem 0;
+/* 等待状态 */
+.waiting-message {
+  padding: 20px;
 }
 
-/* 移除暗色模式 */
-@media (prefers-color-scheme: dark) {
-  :root {
-    color: #333333;
-    background-color: #ffffff;
+.waiting-message .highlight {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* 响应式调整 */
+@media (max-width: 480px) {
+  .container {
+    padding: 15px;
   }
-  a:hover {
-    color: #0d5bbc;
+  
+  .header h1 {
+    font-size: 1.8rem;
   }
-  button {
-    background-color: #1a73e8;
+  
+  .card {
+    padding: 20px;
+  }
+  
+  .time {
+    font-size: 3rem;
+  }
+  
+  .truth-content {
+    font-size: 1.2rem;
   }
 }

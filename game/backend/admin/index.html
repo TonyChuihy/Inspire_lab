@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>狼人真言 - 管理员</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .config-panel, .control-panel {
+      background: #f5f5f5;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .player-list {
+      margin-top: 20px;
+    }
+    .player {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px;
+      border-bottom: 1px solid #ddd;
+    }
+    button {
+      padding: 8px 16px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:disabled {
+      background: #cccccc;
+    }
+  </style>
+</head>
+<body>
+  <h1>狼人真言 - 管理员面板</h1>
+  
+  <div class="config-panel">
+    <h2>游戏配置</h2>
+    <div>
+      <label>狼人数量: </label>
+      <input type="number" id="wolfCount" min="1" max="3" value="2">
+    </div>
+    <div>
+      <label>先知数量: </label>
+      <input type="number" id="seerCount" min="1" max="1" value="1">
+    </div>
+    <div>
+      <label>计时(秒): </label>
+      <input type="number" id="timerDuration" min="60" value="180">
+    </div>
+    <button id="updateConfig">更新配置</button>
+  </div>
+  
+  <div class="player-list">
+    <h2>玩家列表</h2>
+    <div id="players"></div>
+  </div>
+  
+  <div class="control-panel">
+    <h2>游戏控制</h2>
+    <button id="startGame" disabled>开始游戏</button>
+    <button id="nextPhase" disabled>下一阶段</button>
+    <button id="restartGame" disabled>重開游戲</button>
+  </div>
+  
+  <script>
+    const socket = io()
+    let gameState = {}
+    
+    // 获取DOM元素
+    const wolfCountInput = document.getElementById('wolfCount')
+    const seerCountInput = document.getElementById('seerCount')
+    const timerDurationInput = document.getElementById('timerDuration')
+    const updateConfigBtn = document.getElementById('updateConfig')
+    const startGameBtn = document.getElementById('startGame')
+    const nextPhaseBtn = document.getElementById('nextPhase')
+    const playersDiv = document.getElementById('players')
+    const restartGameBtn = document.getElementById('restartGame')
+    
+    // 更新游戏状态
+    socket.on('game-state', (state) => {
+      gameState = state
+      renderPlayers()
+      updateButtons()
+    })
+    
+    // 渲染玩家列表
+    function renderPlayers() {
+      playersDiv.innerHTML = ''
+      gameState.players.forEach(player => {
+        const playerDiv = document.createElement('div')
+        playerDiv.className = 'player'
+        playerDiv.innerHTML = `
+          <span>${player.name}</span>
+          <span>${player.isReady ? '✅ 已准备' : '❌ 未准备'}</span>
+        `
+        playersDiv.appendChild(playerDiv)
+      })
+    }
+    
+    // 更新按钮状态
+    function updateButtons() {
+      const canStart = gameState.players.length >= 3 && 
+                      gameState.players.every(p => p.isReady)
+      
+      startGameBtn.disabled = gameState.phase !== 'config' || !canStart
+      
+      nextPhaseBtn.disabled = gameState.phase === 'config' || 
+                             gameState.phase === 'timer'
+
+      restartGameBtn.disabled = gameState.phase === 'config'
+      
+      // 更新下一阶段按钮文本
+      if (gameState.phase === 'roleAssignment') {
+        nextPhaseBtn.textContent = '开始真言输入'
+      } else if (gameState.phase === 'truthInput') {
+        nextPhaseBtn.textContent = '揭示真言'
+      } else if (gameState.phase === 'truthReveal') {
+        nextPhaseBtn.textContent = '开始计时'
+      } else {
+        nextPhaseBtn.textContent = '下一阶段'
+      }
+    }
+    
+    // 事件监听
+    updateConfigBtn.addEventListener('click', () => {
+      const config = {
+        wolfCount: parseInt(wolfCountInput.value),
+        seerCount: parseInt(seerCountInput.value),
+        timerDuration: parseInt(timerDurationInput.value)
+      }
+      socket.emit('admin-action', { type: 'update-config', config })
+    })
+    
+    startGameBtn.addEventListener('click', () => {
+      socket.emit('admin-action', { type: 'start-game' })
+    })
+    
+    nextPhaseBtn.addEventListener('click', () => {
+      let actionType = ''
+      switch (gameState.phase) {
+        case 'roleAssignment': actionType = 'start-truth-input'; break
+        case 'truthInput': actionType = 'start-truth-reveal'; break
+        case 'truthReveal': actionType = 'start-timer'; break
+      }
+      if (actionType) {
+        socket.emit('admin-action', { type: actionType })
+      }
+    })
+
+    restartGameBtn.addEventListener('click', () => {
+      socket.emit('admin-action', { type: 'reset-game' })
+    })
+  </script>
+</body>
+</html>
